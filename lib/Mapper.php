@@ -214,8 +214,22 @@ class Mapper implements MapperInterface
         $foreignMapper = $this->getMapper($foreignEntity);
         $foreignKey = $foreignMapper->primaryKeyField();
 
+        // Prevent magic getters from triggering PHP errors in a dehydrated
+        // entity when doing Schema related tasks, such as migrating.
+        try {
+            $localValue = $entity->$localKey;
+        } catch (\Throwable $t) {
+            $localValue = null;
+        }
+
         // Return relation object so query can be lazy-loaded
-        return new Relation\BelongsTo($this, $foreignEntity, $foreignKey, $localKey, $entity->$localKey);
+        return new Relation\BelongsTo(
+            $this,
+            $foreignEntity,
+            $foreignKey,
+            $localKey,
+            $localValue
+        );
     }
 
     /**
