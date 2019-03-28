@@ -109,7 +109,7 @@ class BelongsTo extends RelationAbstract implements \ArrayAccess
                     //Check if it was a hasOne or a hasMany relation,
                     //if hasOne, we must unset old value
                     foreach ($relatedRelations as $relatedRelation) {
-                        if ($relatedRelation instanceof Relation\HasOne && $relatedRelation->foreignKey() === $this->localKey()) {
+                        if ($relatedRelation instanceof HasOne && $relatedRelation->foreignKey() === $this->localKey()) {
                             if ($relatedMapper->entityManager()->fields()[$relatedRelation->foreignKey()]['notnull']) {
                                 $lastResult = $relatedMapper->delete([$relatedRelation->foreignKey() => $entity->get($relatedRelation->foreignKey())]);
                             } else {

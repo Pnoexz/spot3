@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Fork of Spot2: a simple DataMapper built on top of Doctrine DBAL",
     "keywords": ["orm", "datamapper", "dbal", "doctrine", "database", "model", "mapper", "entity"],
-    "license" : "BSD",
+    "license" : "BSD-3-Clause",
     "authors" : [
         {
             "name": "Matias Pino",
