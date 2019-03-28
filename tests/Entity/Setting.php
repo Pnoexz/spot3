@@ -15,11 +15,13 @@ class Setting extends \Spot\Entity
         return [
             'id'     => ['type' => 'integer', 'primary' => true, 'autoincrement' => true],
             'skey'   => ['type' => 'string', 'required' => true, 'unique' => true],
-            'svalue' => ['type' => 'encrypted',  'required' => true]
+            'svalue' => ['type' => 'string',  'required' => true]
+//            'svalue' => ['type' => 'encrypted',  'required' => true]
         ];
     }
 }
 
 // Add encrypted type
-\SpotTest\Type\Encrypted::$key = 'SOUPER-SEEKRET1!';
-\Doctrine\DBAL\Types\Type::addType('encrypted', 'SpotTest\Type\Encrypted');
+// @todo since mcrypt has been deprecated, these tests might now irrelevant
+// \SpotTest\Type\Encrypted::$key = 'SOUPER-SEEKRET1!';
+// \Doctrine\DBAL\Types\Type::addType('encrypted', 'SpotTest\Type\Encrypted');
