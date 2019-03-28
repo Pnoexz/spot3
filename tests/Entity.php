@@ -53,7 +53,7 @@ class Entity extends \PHPUnit_Framework_TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => new \DateTime(),
+            'date_created' => $post->date_created,
             'data' => null,
             'author_id' => 1
         ];
@@ -66,12 +66,13 @@ class Entity extends \PHPUnit_Framework_TestCase
 
     public function testEntitySetDataConstruct()
     {
+        $dateCreated = new \DateTime();
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
         $post = new \SpotTest\Entity\Post([
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $dateCreated
         ]);
 
         $data = $post->data();
@@ -82,10 +83,9 @@ class Entity extends \PHPUnit_Framework_TestCase
             'title' => 'My Awesome Post',
             'body' => '<p>Body</p>',
             'status' => 0,
-            'date_created' => null,
             'data' => null,
             'author_id' => 1,
-            'date_created' => new \DateTime()
+            'date_created' => $dateCreated
         ];
         ksort($testData);
 

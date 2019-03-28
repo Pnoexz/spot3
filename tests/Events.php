@@ -403,7 +403,7 @@ class Events extends \PHPUnit_Framework_TestCase
             $hooks[] = 'Called afterWith';
         });
 
-        $mapper->all('\SpotTest\Entity\Post', ['id' => [1,2]])->with('comments')->execute();
+        $mapper->all('\SpotTest\Entity\Post', ['id' => [1,2]])->with(['comments'])->execute();
 
         $this->assertEquals(['Called beforeWith', 'Called loadWith', 'Called afterWith'], $hooks);
         $eventEmitter->removeAllListeners();
@@ -430,7 +430,7 @@ class Events extends \PHPUnit_Framework_TestCase
             return false;
         });
 
-        $posts = $mapper->all()->with('comments')->execute();
+        $posts = $mapper->all()->with(['comments'])->execute();
         foreach ($posts as $post) {
             $this->assertEquals(1, $post->comments->count());
         }

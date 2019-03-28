@@ -8,6 +8,14 @@ class QuerySql extends \PHPUnit_Framework_TestCase
 {
     private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author'];
 
+    private function setSqlModes(\Spot\Mapper $mapper)
+    {
+        $mapper->connection()
+            ->query("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';")
+            ->execute()
+        ;
+    }
+
     public static function setupBeforeClass()
     {
         foreach (self::$entities as $entity) {
@@ -182,7 +190,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains("ORDER BY test_posts.date_created ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
-    
+
     // Ordering by function
     public function testOrderByFunction()
     {
@@ -191,7 +199,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertContains("ORDER BY TRIM(test_posts.body) ASC", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
-    
+
     // Ordering by complex function
     public function testOrderByComplexFunction()
     {
@@ -212,7 +220,7 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         $this->assertEquals("SELECT * FROM test_posts WHERE test_posts.status = ? GROUP BY test_posts.id", $query->toSql());
         $this->assertEquals(count($query), 1);
     }
-    
+
     // Grouping by function
     public function testGroupByFunction()
     {
@@ -314,6 +322,8 @@ class QuerySql extends \PHPUnit_Framework_TestCase
         if (!$mapper->connectionIs('mysql')) {
             $this->markTestSkipped('Not support in Sqlite - requires group by');
         }
+
+        $this->setSqlModes($mapper);
 
         $posts = $mapper->select('id, MAX(status) as maximus')
             ->having(['maximus' => 10]);

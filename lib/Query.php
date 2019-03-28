@@ -2,7 +2,9 @@
 
 namespace Spot;
 
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Query\QueryBuilder;
+use Spot\Exceptions\DeprecatedException;
+use Spot\Exceptions\QueryException;
 
 /**
  * Query Object - Used to build adapter-independent queries PHP-style
@@ -30,7 +32,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     protected $_tableName;
 
     /**
-     * @var
+     * @var QueryBuilder
      */
     protected $_queryBuilder;
 
@@ -64,28 +66,28 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @var array
      */
     protected static $_whereOperators = [
-        '<' => 'Spot\Query\Operator\LessThan',
-        ':lt' => 'Spot\Query\Operator\LessThan',
-        '<=' => 'Spot\Query\Operator\LessThanOrEqual',
-        ':lte' => 'Spot\Query\Operator\LessThanOrEqual',
-        '>' => 'Spot\Query\Operator\GreaterThan',
-        ':gt' => 'Spot\Query\Operator\GreaterThan',
-        '>=' => 'Spot\Query\Operator\GreaterThanOrEqual',
-        ':gte' => 'Spot\Query\Operator\GreaterThanOrEqual',
-        '~=' => 'Spot\Query\Operator\RegExp',
-        '=~' => 'Spot\Query\Operator\RegExp',
-        ':regex' => 'Spot\Query\Operator\RegExp',
-        ':like' => 'Spot\Query\Operator\Like',
-        ':fulltext' => 'Spot\Query\Operator\FullText',
-        ':fulltext_boolean' => 'Spot\Query\Operator\FullTextBoolean',
-        'in' => 'Spot\Query\Operator\In',
-        ':in' => 'Spot\Query\Operator\In',
-        '<>' => 'Spot\Query\Operator\Not',
-        '!=' => 'Spot\Query\Operator\Not',
-        ':ne' => 'Spot\Query\Operator\Not',
-        ':not' => 'Spot\Query\Operator\Not',
-        '=' => 'Spot\Query\Operator\Equals',
-        ':eq' => 'Spot\Query\Operator\Equals',
+        '<' => \Spot\Query\Operator\LessThan::class,
+        ':lt' => \Spot\Query\Operator\LessThan::class,
+        '<=' => \Spot\Query\Operator\LessThanOrEqual::class,
+        ':lte' => \Spot\Query\Operator\LessThanOrEqual::class,
+        '>' => \Spot\Query\Operator\GreaterThan::class,
+        ':gt' => \Spot\Query\Operator\GreaterThan::class,
+        '>=' => \Spot\Query\Operator\GreaterThanOrEqual::class,
+        ':gte' => \Spot\Query\Operator\GreaterThanOrEqual::class,
+        '~=' => \Spot\Query\Operator\RegExp::class,
+        '=~' => \Spot\Query\Operator\RegExp::class,
+        ':regex' => \Spot\Query\Operator\RegExp::class,
+        ':like' => \Spot\Query\Operator\Like::class,
+        ':fulltext' => \Spot\Query\Operator\FullText::class,
+        ':fulltext_boolean' => \Spot\Query\Operator\FullTextBoolean::class,
+        'in' => \Spot\Query\Operator\In::class,
+        ':in' => \Spot\Query\Operator\In::class,
+        '<>' => \Spot\Query\Operator\Not::class,
+        '!=' => \Spot\Query\Operator\Not::class,
+        ':ne' => \Spot\Query\Operator\Not::class,
+        ':not' => \Spot\Query\Operator\Not::class,
+        '=' => \Spot\Query\Operator\Equals::class,
+        ':eq' => \Spot\Query\Operator\Equals::class,
     ];
 
     /**
@@ -128,9 +130,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * since quoting is different per platform
      *
      * @param bool $noQuote
-     * @return $this
+     * @return self
      */
-    public function noQuote($noQuote = true)
+    public function noQuote($noQuote = true): self
     {
         $this->_noQuote = $noQuote;
 
@@ -200,9 +202,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * Select (passthrough to DBAL QueryBuilder)
      *
-     * @return $this
+     * @return self
      */
-    public function select()
+    public function select(): self
     {
         call_user_func_array([$this->builder(), 'select'], $this->escapeIdentifier(func_get_args()));
 
@@ -212,9 +214,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * Delete (passthrough to DBAL QueryBuilder)
      *
-     * @return $this
+     * @return self
      */
-    public function delete()
+    public function delete(): self
     {
         call_user_func_array([$this->builder(), 'delete'], $this->escapeIdentifier(func_get_args()));
 
@@ -224,9 +226,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * From (passthrough to DBAL QueryBuilder)
      *
-     * @return $this
+     * @return self
      */
-    public function from()
+    public function from(): self
     {
         call_user_func_array([$this->builder(), 'from'], $this->escapeIdentifier(func_get_args()));
 
@@ -246,9 +248,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * Set query parameters (passthrough to DBAL QueryBuilder)
      *
-     * @return $this
+     * @return self
      */
-    public function setParameters()
+    public function setParameters(): self
     {
         call_user_func_array([$this->builder(), __FUNCTION__], func_get_args());
 
@@ -260,9 +262,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $where Array of conditions for this clause
      * @param string $type Keyword that will separate each condition - "AND", "OR"
-     * @return $this
+     * @return self
      */
-    public function where(array $where, $type = 'AND')
+    public function where(array $where, $type = 'AND'): self
     {
         if (!empty($where)) {
             $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
@@ -277,9 +279,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $where Array of conditions for this clause
      * @param string $type Keyword that will separate each condition - "AND", "OR"
-     * @return $this
+     * @return self
      */
-    public function orWhere(array $where, $type = 'AND')
+    public function orWhere(array $where, $type = 'AND'): self
     {
         if (!empty($where)) {
             $whereClause = implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($where));
@@ -294,9 +296,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $where Array of conditions for this clause
      * @param string $type Keyword that will separate each condition - "AND", "OR"
-     * @return $this|Query
+     * @return self
      */
-    public function andWhere(array $where, $type = 'AND')
+    public function andWhere(array $where, $type = 'AND'): self
     {
         return $this->where($where, $type);
     }
@@ -307,19 +309,22 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @param string $field Field name for SQL statement (will be quoted)
      * @param string $sql SQL string to put in WHERE clause
      * @param array $params
-     * @return $this
-     * @throws Exception
+     * @return self
+     * @throws QueryException
      */
-    public function whereFieldSql($field, $sql, array $params = [])
+    public function whereFieldSql($field, $sql, array $params = []): self
     {
         $builder = $this->builder();
         $placeholderCount = substr_count($sql, '?');
         $paramCount = count($params);
         if ($placeholderCount !== $paramCount) {
-            throw new Exception("Number of supplied parameters (" . $paramCount . ") does not match the number of provided placeholders (" . $placeholderCount . ")");
+            throw new QueryException(
+                "Number of supplied parameters ($paramCount) does not match " .
+                "the number of provided placeholders ($placeholderCount)"
+            );
         }
 
-        $sql = preg_replace_callback('/\?/', function ($match) use ($builder, &$params) {
+        $sql = preg_replace_callback('/\?/', function () use ($builder, &$params) {
             $param = array_shift($params);
 
             return $builder->createPositionalParameter($param);
@@ -333,9 +338,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * WHERE conditions
      *
      * @param string $sql SQL string to put in WHERE clause
-     * @return $this
+     * @return self
      */
-    public function whereSql($sql)
+    public function whereSql($sql): self
     {
         $this->builder()->andWhere($sql);
 
@@ -348,7 +353,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * @param array $where Array of conditions for this clause
      * @param bool $useAlias
      * @return array SQL fragment strings for WHERE clause
-     * @throws Exception
+     * @throws \InvalidArgumentException
      */
     private function parseWhereToSQLFragments(array $where, $useAlias = true)
     {
@@ -364,12 +369,16 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
                 $colData = [implode(' ', $colData), $operator];
             }
 
-            $operatorCallable = $this->getWhereOperatorCallable(strtolower($operator));
+            $operatorCallable = $this->getWhereOperatorCallable(
+                strtolower($operator)
+            );
             if (!$operatorCallable) {
-                throw new \InvalidArgumentException("Unsupported operator '" . $operator . "' "
-                    . "in WHERE clause. If you want to use a custom operator, you "
-                    . "can add one with \Spot\Query::addWhereOperator('" . $operator . "', "
-                    . "function (QueryBuilder \$builder, \$column, \$value) { ... }); ");
+                throw new \InvalidArgumentException(
+                    "Unsupported operator '$operator' in WHERE clause. If " .
+                    "you want to use a custom operator, you can add one with " .
+                    "\Spot\Query::addWhereOperator('$operator ', function " .
+                    " (QueryBuilder \$builder, \$column, \$value) { ... }); "
+                );
             }
 
             $col = $colData[0];
@@ -377,7 +386,10 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
             // Handle DateTime value objects
             if ($value instanceof \DateTime) {
                 $mapper = $this->mapper();
-                $convertedValues = $mapper->convertToDatabaseValues($mapper->entity(), [$col => $value]);
+                $convertedValues = $mapper->convertToDatabaseValues(
+                    $mapper->entity(),
+                    [$col => $value]
+                );
                 $value = $convertedValues[$col];
             }
 
@@ -416,13 +428,19 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * Relations to be eager-loaded
      *
-     * @param mixed|null $relations Array/string of relation(s) to be loaded.
-     * @return $this|array
+     * @param array|null $relations Array/string of relation(s) to be loaded.
+     * @return self
+     * @throws DeprecatedException
      */
-    public function with($relations = null)
+    public function with(array $relations = null): self
     {
         if ($relations === null) {
-            return $this->with;
+            $message = 'Calling \Spot\Query->with() without declaring the ' .
+                'relationships has been deprecated. Use ' .
+                '\Spot\Query->getWith() instead.';
+
+            trigger_error($message, E_USER_DEPRECATED);
+            throw new DeprecatedException($message);
         }
 
         $this->with = array_unique(array_merge((array)$relations, $this->with));
@@ -431,14 +449,24 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     }
 
     /**
+     * Gets the current stored value for relations to eager-load.
+     *
+     * @return array
+     */
+    public function getWith(): array
+    {
+        return $this->with;
+    }
+
+    /**
      * Search criteria (FULLTEXT, LIKE, or REGEX, depending on storage engine and driver)
      *
-     * @param  mixed $fields Single string field or array of field names to use for searching
-     * @param  string $query Search keywords or query
-     * @param  array $options Array of options for search
-     * @return $this
+     * @param mixed  $fields Single string field or array of field names to use for searching
+     * @param string $query Search keywords or query
+     * @param array  $options Array of options for search
+     * @return self
      */
-    public function search($fields, $query, array $options = [])
+    public function search($fields, $query, array $options = []): self
     {
         $fields = (array)$fields;
         $entityDatasourceOptions = $this->mapper()->entityManager()->datasourceOptions($this->entityName());
@@ -479,9 +507,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * ORDER BY columns
      *
      * @param  array $order Array of field names to use for sorting
-     * @return $this
+     * @return self
      */
-    public function order(array $order)
+    public function order(array $order): self
     {
         foreach ($order as $field => $sorting) {
             $this->builder()->addOrderBy($this->fieldWithAlias($field), $sorting);
@@ -494,9 +522,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * GROUP BY clause
      *
      * @param  array $fields Array of field names to use for grouping
-     * @return $this
+     * @return self
      */
-    public function group(array $fields = [])
+    public function group(array $fields = []): self
     {
         foreach ($fields as $field) {
             $this->builder()->addGroupBy($this->fieldWithAlias($field));
@@ -510,11 +538,14 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      *
      * @param array $having Array (like where) for HAVING statement for filter records by
      * @param string $type
-     * @return $this
+     * @return self
      */
-    public function having(array $having, $type = 'AND')
+    public function having(array $having, $type = 'AND'): self
     {
-        $this->builder()->having(implode(' ' . $type . ' ', $this->parseWhereToSQLFragments($having, false)));
+        $this->builder()->having(implode(
+            ' ' . $type . ' ',
+            $this->parseWhereToSQLFragments($having, false)
+        ));
 
         return $this;
     }
@@ -523,11 +554,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * Limit executed query to specified amount of records
      * Implemented at adapter-level for databases that support it
      *
-     * @param int $limit Number of records to return
-     * @param int $offset Record to start at for limited result set
-     * @return $this
+     * @param int|null $limit Number of records to return
+     * @param int|null $offset Record to start at for limited result set
+     * @return self
      */
-    public function limit($limit, $offset = null)
+    public function limit($limit = null, $offset = null): self
     {
         $this->builder()->setMaxResults($limit);
         if ($offset !== null) {
@@ -542,9 +573,9 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * Implemented at adapter-level for databases that support it
      *
      * @param int $offset Record to start at for limited result set
-     * @return $this
+     * @return self
      */
-    public function offset($offset)
+    public function offset($offset): self
     {
         $this->builder()->setFirstResult($offset);
 
@@ -574,7 +605,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
      * SPL IteratorAggregate function
      * Called automatically when attribute is used in a 'foreach' loop
      *
-     * @return \Spot\Entity\Collection
+     * @return \Spot\Entity\Collection|array
      */
     public function getIterator()
     {
@@ -611,13 +642,13 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     /**
      * Return the first entity matched by the query
      *
-     * @return mixed Spot_Entity on success, boolean false on failure
+     * @return EntityInterface|null Spot_Entity on success, null on failure
      */
-    public function first()
+    public function first(): ?EntityInterface
     {
         $result = $this->limit(1)->execute();
 
-        return ($result !== false) ? $result->first() : false;
+        return ($result !== false) ? $result->first() : null;
     }
 
     /**
@@ -713,7 +744,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     public function fieldWithAlias($field, $escaped = true)
     {
         $fieldInfo = $this->_mapper->entityManager()->fields();
-        
+
         // Detect function in field name
         $field = trim($field);
         $function = strpos($field, '(');
@@ -736,7 +767,7 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
 
         $field = $this->_tableName . '.' . $field;
         $field = $escaped ? $this->escapeIdentifier($field) : $field;
-        
+
         $result = $function ? $functionStart : '';
         $result .= $field;
         $result .= $function ? $functionEnd : '';

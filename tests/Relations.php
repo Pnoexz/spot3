@@ -8,6 +8,14 @@ class Relations extends \PHPUnit_Framework_TestCase
 {
     private static $entities = ['PostTag', 'Post\Comment', 'Post', 'Tag', 'Author', 'Event\Search', 'Event'];
 
+    private function setSqlModes(\Spot\Mapper $mapper)
+    {
+        $mapper->connection()
+            ->query("SET SESSION sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';")
+            ->execute()
+        ;
+    }
+
     public static function setupBeforeClass()
     {
         foreach (self::$entities as $entity) {
@@ -99,12 +107,13 @@ class Relations extends \PHPUnit_Framework_TestCase
     public function testHasManyRelationCountZero()
     {
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
+        $this->setSqlModes($mapper);
         $post = $mapper->get();
         $post->title = "No Comments";
         $post->body = "<p>Comments relation test</p>";
         $mapper->save($post);
 
-        $this->assertSame(0, count($post->comments));
+        $this->assertEmpty($post->comments);
     }
 
     public function testBlogCommentsIterateEmptySet()
