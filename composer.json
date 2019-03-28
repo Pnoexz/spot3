@@ -1,11 +1,14 @@
 {
-    "name": "vlucas/spot2",
+    "name": "pnoexz/spot3",
     "type": "library",
-    "description": "Simple DataMapper built on top of Doctrine DBAL",
+    "description": "Fork of Spot2: a simple DataMapper built on top of Doctrine DBAL",
     "keywords": ["orm", "datamapper", "dbal", "doctrine", "database", "model", "mapper", "entity"],
-    "homepage": "https://github.com/vlucas/spot2",
     "license" : "BSD",
     "authors" : [
+        {
+            "name": "Matias Pino",
+            "email": "pnoexz@gmail.com"
+        },
         {
             "name": "Vance Lucas",
             "email": "vance@vancelucas.com",
@@ -13,7 +16,9 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=7.1",
+        "ext-json": "*",
+        "ext-pdo": "*",
         "vlucas/valitron": "~1.1",
         "doctrine/dbal": "^2.5.4",
         "sabre/event": "~2.0"

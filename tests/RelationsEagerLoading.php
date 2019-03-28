@@ -105,7 +105,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         $startCount = count($logger->queries);
 
-        $posts = $mapper->all()->with('comments');
+        $posts = $mapper->all()->with(['comments']);
         foreach ($posts as $post) {
             foreach ($post->comments as $comment) {
                 // Do nothing - just had to iterate to execute the queries
@@ -148,7 +148,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         $startCount = count($logger->queries);
 
-        $posts = $mapper->all()->with('author');
+        $posts = $mapper->all()->with(['author']);
         foreach ($posts as $post) {
             $this->assertEquals($post->author_id, $post->author->id);
         }
@@ -168,7 +168,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         $startCount = count($logger->queries);
 
-        $events = $mapper->all()->with('search');
+        $events = $mapper->all()->with(['search']);
         foreach ($events as $event) {
             $this->assertEquals($event->id, $event->search->event_id);
         }
@@ -188,7 +188,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
 
         $startCount = count($logger->queries);
 
-        $posts = $mapper->all()->with('tags');
+        $posts = $mapper->all()->with(['tags']);
         foreach ($posts as $post) {
             foreach ($post->tags as $tags) {
                 // Do nothing - just had to iterate to execute the queries
@@ -205,7 +205,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
     public function testEagerLoadHasManyThroughToArray()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Post');
-        $post = $mapper->all()->with('tags')->first();
+        $post = $mapper->all()->with(['tags'])->first();
         $result = $post->toArray();
 
         $this->assertTrue(is_array($result['tags']));
@@ -224,7 +224,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
     public function testEagerLoadBelongsToArray()
     {
         $mapper = test_spot_mapper('\SpotTest\Entity\Post');
-        $posts = $mapper->all()->with('author')->first();
+        $posts = $mapper->all()->with(['author'])->first();
 
         $result = $posts->toArray();
 
@@ -244,7 +244,7 @@ class RelationsEagerLoading extends \PHPUnit_Framework_TestCase
     public function testEagerLoadHasOneToArray()
     {
         $mapper = test_spot_mapper('SpotTest\Entity\Event');
-        $events = $mapper->all()->with('search')->first();
+        $events = $mapper->all()->with(['search'])->first();
 
         $result = $events->toArray();
 

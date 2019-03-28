@@ -143,7 +143,7 @@ class Resolver
         // Set PDO fetch mode
         $stmt->setFetchMode(\PDO::FETCH_ASSOC);
 
-        $collection = $query->mapper()->collection($stmt, $query->with());
+        $collection = $query->mapper()->collection($stmt, $query->getWith());
 
         // Ensure statement is closed
         $stmt->closeCursor();
