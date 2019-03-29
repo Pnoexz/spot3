@@ -648,7 +648,11 @@ class Query implements \Countable, \IteratorAggregate, \ArrayAccess, \JsonSerial
     {
         $result = $this->limit(1)->execute();
 
-        return ($result !== false) ? $result->first() : null;
+        if (empty($result) || empty(count($result))) {
+            return null;
+        }
+
+        return $result->first();
     }
 
     /**
