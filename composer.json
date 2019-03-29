@@ -31,5 +31,10 @@
             "Spot\\": "lib/",
             "SpotTest\\": "tests/"
         }
+    },
+    "scripts":{
+        "unit:mysql":"vendor/bin/phpunit --configuration phpunit_mysql.xml",
+        "unit:pgsql":"vendor/bin/phpunit --configuration phpunit_pgsql.xml",
+        "unit:sqlite":"vendor/bin/phpunit --configuration phpunit_sqlite.xml"
     }
 }
