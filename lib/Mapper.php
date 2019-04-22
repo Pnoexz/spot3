@@ -843,7 +843,7 @@ class Mapper implements MapperInterface
         }
 
         // Prepare data
-        $data = $entity->dataModified();
+        $data = $entity->data(null, false, false);
         // Save only known, defined fields
         $entityFields = $this->fields();
         $entityName = $this->entity();
